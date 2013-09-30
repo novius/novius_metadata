@@ -12,7 +12,10 @@ return array(
     /*'id' => array(
         'label' => __(''),
         'model' => 'Model_Nature', // May be, possibility to add where clauses ?
-        'renderer' => 'Renderer_Nature',
+        'field' => array(
+            'renderer' => 'Renderer_Metadata',
+            'renderer_options' => array(),
+        ),
         'has_many' => true,
     ),*/
 );

@@ -7,3 +7,15 @@
  * @link http://www.novius-os.org
  */
 
+CREATE TABLE IF NOT EXISTS `novius_metadata` (
+  `metadata_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `metadata_item_table` varchar(255) NOT NULL,
+  `metadata_item_id` int(10) unsigned NOT NULL,
+  `metadata_class` varchar(30) NOT NULL,
+  `metadata_nature_table` varchar(255) NOT NULL,
+  `metadata_nature_id` int(11) NOT NULL,
+  PRIMARY KEY (`metadata_id`),
+  KEY `metadata_item_table` (`metadata_item_table`,`metadata_item_id`),
+  KEY `metadata_nature_table` (`metadata_nature_table`,`metadata_nature_id`),
+  KEY `metadata_class` (`metadata_class`)
+) DEFAULT CHARSET=utf8;
