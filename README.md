@@ -1,6 +1,6 @@
 # Metadata for Novius OS
 
-Metadata is an application for Novius OS.
+Metadata is an application for Novius OS for adding metadata on models.
 
 ## Requirements
 
