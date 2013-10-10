@@ -51,13 +51,12 @@ class Controller_Admin_Picker extends \Nos\Controller_Admin_Appdesk
             $params['order_by'] = $nature_model::title_property();
         }
         if (is_array($params['where'])) {
-            $params['callback'] = array(
-                function ($query) use ($params) {
-                    $query->where($params['where']);
+            $where = function ($query) use ($params) {
+                $query->where($params['where']);
 
-                    return $query;
-                },
-            );
+                return $query;
+            };
+            $params['callback'] = array($where);
         }
         $this->config['query'] = $params;
 

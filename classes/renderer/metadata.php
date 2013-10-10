@@ -96,47 +96,57 @@ class Renderer_Metadata extends \Nos\Renderer
         $count = $nature_model::query()->count();
         $behaviour_tree = $nature_model::behaviours('Nos\Orm_Behaviour_Tree');
         if ($count > \Arr::get($this->renderer_options, 'select_limit', 50) || !empty($behaviour_tree)) {
-            parent::build();
-
-            $this->fieldset()->append(\View::forge('novius_metadata::renderer/javascript', array(
-                'field' => $this,
-                'single' => $this->isSingle(),
-                'metadata_class_name' => $this->getMetadataClassName(),
-                'metadata_class' => $metadata_class,
-                'i18n' => \Arr::get($this->renderer_options, 'i18n', array()),
-            ), false));
-
-            return $this->template((string) \View::forge('novius_metadata::renderer/inputs', array(
-                'field' => $this,
-                'single' => $this->isSingle(),
-                'metadata_class' => $metadata_class,
-            ), false));
+            return $this->buildRenderer($metadata_class);
         } else {
-            $this->type  = 'select';
-            $this->options = array();
-            if ($this->isSingle()) {
-                $this->options[''] = \Arr::get($this->renderer_options, 'i18n.choose',
-                        strtr(__('Choose a "{{metadata_class}}":'), array(
-                            '{{metadata_class}}' => \Arr::get($metadata_class, 'label'),
-                        )
-                    ));
-            } else {
-                $this->set_attribute('multiple', true);
-            }
-            $params = array();
-            if (is_array($nature) && $query = \Arr::get($nature, 'query', false)) {
-                $params = $query;
-            }
-            if (!isset($params['order_by'])) {
-                $params['order_by'] = $nature_model::title_property();
-            }
-            $natures = $nature_model::find('all', $params);
-            foreach ($natures as $nature) {
-                $this->options[$nature->id] = $nature->title_item();
-            }
-
-            return (string) parent::build();
+            return $this->buildSelect($metadata_class, $nature, $nature_model);
         }
+    }
+
+    protected function buildRenderer($metadata_class)
+    {
+        parent::build();
+
+        $this->fieldset()->append(\View::forge('novius_metadata::renderer/javascript', array(
+            'field' => $this,
+            'single' => $this->isSingle(),
+            'metadata_class_name' => $this->getMetadataClassName(),
+            'metadata_class' => $metadata_class,
+            'i18n' => \Arr::get($this->renderer_options, 'i18n', array()),
+        ), false));
+
+        return $this->template((string) \View::forge('novius_metadata::renderer/inputs', array(
+            'field' => $this,
+            'single' => $this->isSingle(),
+            'metadata_class' => $metadata_class,
+        ), false));
+    }
+
+    protected function buildSelect($metadata_class, $nature, $nature_model)
+    {
+        $this->type  = 'select';
+        $this->options = array();
+        if ($this->isSingle()) {
+            $this->options[''] = \Arr::get($this->renderer_options, 'i18n.choose',
+                strtr(__('Choose a "{{metadata_class}}":'), array(
+                        '{{metadata_class}}' => \Arr::get($metadata_class, 'label'),
+                    )
+                ));
+        } else {
+            $this->set_attribute('multiple', true);
+        }
+        $params = array();
+        if (is_array($nature) && $query = \Arr::get($nature, 'query', false)) {
+            $params = $query;
+        }
+        if (!isset($params['order_by'])) {
+            $params['order_by'] = $nature_model::title_property();
+        }
+        $natures = $nature_model::find('all', $params);
+        foreach ($natures as $nature) {
+            $this->options[$nature->id] = $nature->title_item();
+        }
+
+        return (string) parent::build();
     }
 
     protected function getMetadataClassName()
