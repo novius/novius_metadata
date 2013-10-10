@@ -20,7 +20,7 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
     public static function _init()
     {
         \Nos\I18n::current_dictionary('novius_metadata::common');
-        \Config::load('novius_metadata::classes', true);
+        \Config::load('novius_metadata::metadata_classes', true);
     }
 
     public function __construct($class)
@@ -80,7 +80,7 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
     public function getMetadataClasses()
     {
-        $metadata_classes = \Config::get('novius_metadata::classes', array());
+        $metadata_classes = \Config::get('novius_metadata::metadata_classes', array());
 
         foreach ($this->_properties['exclude'] as $metadata_class) {
             unset($metadata_classes[$metadata_class]);
