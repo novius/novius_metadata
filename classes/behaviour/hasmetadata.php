@@ -19,8 +19,19 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
     public static function _init()
     {
-        I18n::current_dictionary('novius_metadata::common');
+        \Nos\I18n::current_dictionary('novius_metadata::common');
         \Config::load('novius_metadata::classes', true);
+    }
+
+    public function __construct($class)
+    {
+        parent::__construct($class);
+        if (!isset($this->_properties['exclude'])) {
+            $this->_properties['exclude'] = array();
+        }
+        if (!isset($this->_properties['classes'])) {
+            $this->_properties['classes'] = array();
+        }
     }
 
     /**
@@ -29,9 +40,10 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
     public function buildRelations()
     {
         $class = $this->_class;
+        $_primary_key = $class::primary_key();
 
         $class::addRelation('has_many', 'metadata', array(
-            'key_from' => $class::primary_key(),
+            'key_from' => $_primary_key[0],
             'model_to' => 'Novius\Metadata\Model_Metadata',
             'key_to' => 'metadata_item_id',
             'cascade_save' => true,
@@ -42,9 +54,31 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
                 ),
             ),
         ));
+
+        $metadata_classes = $this->getMetadataClasses();
+        foreach ($metadata_classes as $key => $metadata_class) {
+            $nature = $metadata_class['nature'];
+            $nature_model = is_array($nature) ? \Arr::get($nature, 'model', null) : $nature;
+            $nature_pk = $nature_model::primary_key();
+
+            $class::addRelation('many_many', 'metadata_'.$key, array(
+                'table_through' => 'novius_metadata',
+                'key_from' => $_primary_key[0],
+                'key_through_from' => 'metadata_item_id',
+                'key_through_to' => 'metadata_nature_id',
+                'key_to' => $nature_pk[0],
+                'cascade_save' => false,
+                'cascade_delete' => false,
+                'model_to'       => $nature_model,
+                'where' => array(
+                    array('metadata_item_table', '=', \DB::expr(\DB::quote($class::table()))),
+                    array('metadata_class', '=', \DB::expr(\DB::quote($key))),
+                ),
+            ));
+        }
     }
 
-    protected function _getMetadataClasses()
+    public function getMetadataClasses()
     {
         $metadata_classes = \Config::get('novius_metadata::classes', array());
 
@@ -59,17 +93,19 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
     public function crudConfig(&$config, $crud)
     {
-        $metadata_classes = $this->_getMetadataClasses();
+        $metadata_classes = $this->getMetadataClasses();
         $label_metadata = __('Metadata');
         foreach ($metadata_classes as $key => $metadata_class) {
-            $config['fields']['metadata_'.$key] = array_merge(array(
-                'label' => \Arr::get($metadata_class, 'label', $key),
+            $config['fields']['metadata_'.$key] = \Arr::merge(array(
+                'renderer' => 'Novius\Metadata\Renderer_Metadata',
+                'renderer_options' => array(
+                    'metadata_class' => $metadata_class,
+                ),
             ), \Arr::get($metadata_class, 'field'));
 
             foreach ($config['layout'] as $key_layout => $layout) {
                 if ($layout['view'] === 'nos::form/layout_standard') {
                     \Arr::set($config['layout'][$key_layout], 'params.menu.'.$label_metadata, array('metadata_'.$key));
-
                 }
             }
         }
