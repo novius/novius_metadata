@@ -8,7 +8,7 @@
  * @link https://github.com/novius/novius_metadata
  */
 
-//return array(
+return array(
 //    'metadata_class_name' => array(
 //        'label' => __('Metadata class label'),
 //        'nature' => 'Model_Nature',
@@ -38,4 +38,4 @@
 //            ),
 //        ),
 //    ),
-//);
+);
