@@ -50,7 +50,7 @@ class Controller_Admin_Picker extends \Nos\Controller_Admin_Appdesk
         if (!isset($params['order_by'])) {
             $params['order_by'] = $nature_model::title_property();
         }
-        if (is_array($params['where'])) {
+        if (isset($params['where']) && is_array($params['where'])) {
             $where = function ($query) use ($params) {
                 $query->where($params['where']);
 
