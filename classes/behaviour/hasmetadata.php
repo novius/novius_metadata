@@ -105,8 +105,21 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
             foreach ($config['layout'] as $key_layout => $layout) {
                 if ($layout['view'] === 'nos::form/layout_standard') {
-                    \Arr::set($config['layout'][$key_layout], 'params.menu.'.$label_metadata, array('metadata_'.$key));
+                    $menu = current($config['layout'][$key_layout]['params']['menu']);
+                    if (empty($menu['view'])) {
+                        //short configuration for menu
+                        \Arr::set($config['layout'][$key_layout], 'params.menu.'.$label_metadata, array('metadata_'.$key));
+                    } else {
+                        //complete configuration for menu
+                        \Arr::set($config['layout'][$key_layout]['params']['menu']['accordion']['params']['accordions'], $key, array(
+                            'title' => $label_metadata,
+                            'fields' => array(
+                                'metadata_'.$key,
+                            )
+                        ));
+                    }
                 }
+                //TODO search for another configuration if the layout standard is not used
             }
         }
     }
