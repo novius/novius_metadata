@@ -93,8 +93,7 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
     public function crudConfig(&$config, $crud)
     {
-        $metadata_classes = $this->getMetadataClasses();
-        $label_metadata = __('Metadata');
+       $metadata_classes = $this->getMetadataClasses();
         foreach ($metadata_classes as $key => $metadata_class) {
             $config['fields']['metadata_'.$key] = \Arr::merge(array(
                 'renderer' => 'Novius\Metadata\Renderer_Metadata',
@@ -102,10 +101,30 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
                     'metadata_class' => $metadata_class,
                 ),
             ), \Arr::get($metadata_class, 'field'));
-
+            $label_metadata = (!empty($metadata_class['group'])) ? $metadata_class['group'] : __('Metadata');
             foreach ($config['layout'] as $key_layout => $layout) {
                 if ($layout['view'] === 'nos::form/layout_standard') {
-                    \Arr::set($config['layout'][$key_layout], 'params.menu.'.$label_metadata, array('metadata_'.$key));
+                    $menu = current($config['layout'][$key_layout]['params']['menu']);
+                    //short configuration for menu
+                    if (empty($menu['view'])) {
+                        if (!array_key_exists($label_metadata, $config['layout'][$key_layout]['params']['menu'])) {
+                            //set $label_metadata key in the menu
+                            $config['layout'][$key_layout]['params']['menu'][$label_metadata] = array();
+                        }
+                        $config['layout'][$key_layout]['params']['menu'][$label_metadata][] = 'metadata_'.$key;
+                    } else {
+                        //complete configuration for menu
+                        if (!array_key_exists($label_metadata, $config['layout'][$key_layout]['params']['menu']['accordion']['params']['accordions'])) {
+                            //set $label_metadata key in the menu
+                            $config['layout'][$key_layout]['params']['menu']['accordion']['params']['accordions'][$label_metadata] = array(
+                                'title' => $label_metadata,
+                                'fields' => array(
+                                )
+                            );
+                        }
+                        $config['layout'][$key_layout]['params']['menu']['accordion']['params']['accordions'][$label_metadata]['fields'][] =  'metadata_'.$key;
+                    }
+
                 }
             }
         }
