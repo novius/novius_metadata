@@ -70,9 +70,11 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
                 'cascade_save' => false,
                 'cascade_delete' => false,
                 'model_to'       => $nature_model,
-                'where' => array(
-                    array('metadata_item_table', '=', \DB::expr(\DB::quote($class::table()))),
-                    array('metadata_class', '=', \DB::expr(\DB::quote($key))),
+                'conditions'=> array(
+                    'through_where' => array(
+                        array('metadata_item_table', '=', \DB::expr(\DB::quote($class::table()))),
+                        array('metadata_class', '=', \DB::expr(\DB::quote($key))),
+                    ),
                 ),
             ));
         }
@@ -105,7 +107,13 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
             foreach ($config['layout'] as $key_layout => $layout) {
                 if ($layout['view'] === 'nos::form/layout_standard') {
-                    \Arr::set($config['layout'][$key_layout], 'params.menu.'.$label_metadata, array('metadata_'.$key));
+                    $config['layout'][$key_layout] = \Arr::merge($config['layout'][$key_layout], array(
+                        'params' => array(
+                            'menu' => array(
+                                $label_metadata => array('metadata_'.$key)
+                            ),
+                        ),
+                    ));
                 }
             }
         }
