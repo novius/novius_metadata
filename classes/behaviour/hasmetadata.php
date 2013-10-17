@@ -82,7 +82,7 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
 
     public function getMetadataClasses()
     {
-        $metadata_classes = \Config::get('novius_metadata::metadata_classes', array());
+        $metadata_classes = \Config::loadConfiguration('novius_metadata::metadata_classes');
 
         foreach ($this->_properties['exclude'] as $metadata_class) {
             unset($metadata_classes[$metadata_class]);
