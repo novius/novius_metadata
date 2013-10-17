@@ -96,7 +96,6 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
     public function crudConfig(&$config, $crud)
     {
         $metadata_classes = $this->getMetadataClasses();
-        $label_metadata = __('Metadata');
         foreach ($metadata_classes as $key => $metadata_class) {
             $config['fields']['metadata_'.$key] = \Arr::merge(array(
                 'renderer' => 'Novius\Metadata\Renderer_Metadata',
@@ -104,16 +103,33 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
                     'metadata_class' => $metadata_class,
                 ),
             ), \Arr::get($metadata_class, 'field'));
-
+            $label_metadata = \Arr::get($metadata_class, 'group', __('Metadata'));
             foreach ($config['layout'] as $key_layout => $layout) {
                 if ($layout['view'] === 'nos::form/layout_standard') {
-                    $config['layout'][$key_layout] = \Arr::merge($config['layout'][$key_layout], array(
-                        'params' => array(
-                            'menu' => array(
-                                $label_metadata => array('metadata_'.$key)
-                            ),
-                        ),
-                    ));
+                    if (!isset($config['layout'][$key_layout]['params']['menu']['view'])) {
+                        //short configuration for menu
+                        $config['layout'][$key_layout]['params']['menu'] = \Arr::merge(
+                            $config['layout'][$key_layout]['params']['menu'],
+                            array($label_metadata => array('metadata_'.$key))
+                        );
+                    } else {
+                        //complete configuration for menu
+                        $config['layout'][$key_layout]['params']['menu'] = \Arr::merge(
+                            $config['layout'][$key_layout]['params']['menu'],
+                            array(
+                                'accordion' => array(
+                                    'params' => array(
+                                        'accordions' => array(
+                                            $label_metadata = array(
+                                                'title' => $label_metadata,
+                                                'fields' => array(array('metadata_'.$key)),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            )
+                        );
+                    }
                 }
             }
         }
