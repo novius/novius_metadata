@@ -20,7 +20,7 @@ class Behaviour_Hasmetadata extends \Nos\Orm_Behaviour
     public static function _init()
     {
         \Nos\I18n::current_dictionary('novius_metadata::common');
-        \Config::loadConfiguration('novius_metadata::metadata_classes', true);
+        \Config::loadConfiguration('novius_metadata', 'metadata_classes');
     }
 
     public function __construct($class)
